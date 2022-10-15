@@ -8,12 +8,15 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import calc.modelo.Memoria;
+import calc.modelo.MemoriaObservador;
 
-public class Display extends JPanel{
+public class Display extends JPanel implements MemoriaObservador{
 	
 	private JLabel label;
 	
 	public Display() {
+		Memoria.getInstancia().adicionarObservador(this);
+		
 		setBackground(new Color(46,49,50));
 		label = new JLabel(Memoria.getInstancia().getTextoAtual());
 		label.setForeground(Color.WHITE);
@@ -22,5 +25,11 @@ public class Display extends JPanel{
 		setLayout(new FlowLayout(FlowLayout.RIGHT, 10,15));
 		
 		add(label);
+	}
+
+	@Override
+	public void valorAlterado(String novoValor) {
+		label.setText(novoValor);
+		
 	}
 }
