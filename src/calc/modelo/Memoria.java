@@ -6,11 +6,13 @@ import java.util.List;
 public class Memoria {
 	
 	private enum TipoComando {
-		ZERAR, NUMERO, DIV, MULT, SUB, SOMA, IGUAL, VIRGULA;
+		ZERAR, SINAL, NUMERO, DIV, MULT, SUB, SOMA, IGUAL, VIRGULA;
 	};
 	
-	private static final Memoria INSTANCIA = new Memoria();
-	private final List<MemoriaObservador> observadores = new ArrayList<>();
+	private static final Memoria instancia = new Memoria();
+	
+	private final List<MemoriaObservador> observadores =
+			new ArrayList<>();
 	
 	private TipoComando ultimaOperacao = null;
 	private boolean substituir = false;
@@ -18,34 +20,38 @@ public class Memoria {
 	private String textoBuffer = "";
 	
 	private Memoria() {
-		//coloquei o construtor como private p/ deixar no padrão singleton, onde só pode haver uma instancia.
-	}
-
-	public static Memoria getInstancia() {
-		return INSTANCIA;
+		
 	}
 	
+	public static Memoria getInstancia() {
+		return instancia;
+	}
+
 	public void adicionarObservador(MemoriaObservador observador) {
 		observadores.add(observador);
 	}
-
+	
 	public String getTextoAtual() {
 		return textoAtual.isEmpty() ? "0" : textoAtual;
 	}
 	
 	public void processarComando(String texto) {
-		TipoComando tipoComando = detectarComando(texto);
 		
-		if (tipoComando == null) {
+		TipoComando tipoComando = detectarTipoComando(texto);
+		
+		if(tipoComando == null) {
 			return;
-		}
-		else if (tipoComando == TipoComando.ZERAR) {
+		} else if(tipoComando == TipoComando.ZERAR) {
 			textoAtual = "";
 			textoBuffer = "";
 			substituir = false;
 			ultimaOperacao = null;
-		}
-		else if (tipoComando == TipoComando.NUMERO || tipoComando == TipoComando.VIRGULA) {
+		} else if(tipoComando == TipoComando.SINAL && textoAtual.contains("-")) {
+			textoAtual = textoAtual.substring(1);
+		} else if(tipoComando == TipoComando.SINAL && !textoAtual.contains("-")) {
+			textoAtual = "-" + textoAtual;
+		} else if(tipoComando == TipoComando.NUMERO
+				|| tipoComando == TipoComando.VIRGULA) {
 			textoAtual = substituir ? texto : textoAtual + texto;
 			substituir = false;
 		} else {
@@ -59,35 +65,35 @@ public class Memoria {
 	}
 
 	private String obterResultadoOperacao() {
-		if (ultimaOperacao == null) {
+		if(ultimaOperacao == null 
+				|| ultimaOperacao == TipoComando.IGUAL) {
 			return textoAtual;
 		}
 		
-		double numeroBuffer = Double.parseDouble(textoBuffer.replace(",", "."));
-		double numeroAtual = Double.parseDouble(textoBuffer.replace(",", "."));
+		double numeroBuffer = 
+				Double.parseDouble(textoBuffer.replace(",", "."));
+		double numeroAtual = 
+				Double.parseDouble(textoAtual.replace(",", "."));
+		
 		double resultado = 0;
 		
-		if (ultimaOperacao == TipoComando.SOMA) {
+		if(ultimaOperacao == TipoComando.SOMA) {
 			resultado = numeroBuffer + numeroAtual;
-		}
-		else if (ultimaOperacao == TipoComando.SUB) {
+		} else if(ultimaOperacao == TipoComando.SUB) {
 			resultado = numeroBuffer - numeroAtual;
-		}
-		else if (ultimaOperacao == TipoComando.MULT) {
+		} else if(ultimaOperacao == TipoComando.MULT) {
 			resultado = numeroBuffer * numeroAtual;
-		}
-		else if (ultimaOperacao == TipoComando.DIV) {
+		} else if(ultimaOperacao == TipoComando.DIV) {
 			resultado = numeroBuffer / numeroAtual;
 		}
 		
-		String resultadoString = Double.toString(resultado).replace(".", ",");
-		boolean inteiro = resultadoString.endsWith(",0");
-		
-		return inteiro ? resultadoString.replace(",0", "") : resultadoString;
+		String texto = Double.toString(resultado).replace(".", ",");
+		boolean inteiro = texto.endsWith(",0");
+		return inteiro ? texto.replace(",0", "") : texto;
 	}
 
-	private TipoComando detectarComando(String texto) {
-		if (textoAtual.isEmpty() && texto== "0") {
+	private TipoComando detectarTipoComando(String texto) {
+		if(textoAtual.isEmpty() && texto == "0") {
 			return null;
 		}
 		
@@ -95,30 +101,26 @@ public class Memoria {
 			Integer.parseInt(texto);
 			return TipoComando.NUMERO;
 		} catch (NumberFormatException e) {
-			// qnd nao for numero:
-			if ("AC".equals(texto)) {
+			// Quando não for número...
+			if("AC".equals(texto)) {
 				return TipoComando.ZERAR;
-			}
-			else if ("/".equals(texto)) {
+			} else if("/".equals(texto)) {
 				return TipoComando.DIV;
-			}
-			else if ("*".equals(texto)) {
+			} else if("*".equals(texto)) {
 				return TipoComando.MULT;
-			}
-			else if ("+".equals(texto)) {
+			} else if("+".equals(texto)) {
 				return TipoComando.SOMA;
-			}
-			else if ("-".equals(texto)) {
+			} else if("-".equals(texto)) {
 				return TipoComando.SUB;
-			}
-			else if ("=".equals(texto)) {
+			} else if("=".equals(texto)) {
 				return TipoComando.IGUAL;
-			}
-			else if (",".equals(texto) && !textoAtual.contains(",")) {
+			} else if("±".equals(texto)) {
+				return TipoComando.SINAL;
+			} else if(",".equals(texto) 
+					&& !textoAtual.contains(",")) {
 				return TipoComando.VIRGULA;
 			}
 		}
-		
 		return null;
 	}
 	

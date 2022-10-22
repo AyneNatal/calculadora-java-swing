@@ -29,9 +29,10 @@ public class Teclado extends JPanel implements ActionListener{
 		constraints.fill = GridBagConstraints.BOTH;
 		
 		//Linha 1 do teclado:
-		constraints.gridwidth = 3; //p o btn ocupar 3 espaços
+		constraints.gridwidth = 2; //p o btn ocupar 3 espaços
 		adicionarBotao("AC", COR_CINZA_ESCURO, constraints, 0, 0);
 		constraints.gridwidth = 1; //aqui eu faço os btns voltar a ocupar 1 espaço
+		adicionarBotao("±", COR_CINZA_ESCURO, constraints, 2, 0);
 		adicionarBotao("/", COR_LARANJA, constraints, 3, 0);
 
 		//Linha 2 do teclado:
